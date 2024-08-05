@@ -49,8 +49,7 @@ e.g : google Gideon from flash
 // messages.
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
-  console.log(msg)
-  if(msg.text === "/start" || msg.text === "/google")
+  if(msg.text === "/start" || msg.text === "/google" || msg.contact || msg.location)
     return
   else if(msg.text.toLowerCase() === "/help") {
     return bot.sendMessage(chatId, 
@@ -92,13 +91,44 @@ Here is a list of all commands
   bot.sendMessage(chatId, 'Received your message. /help for all bot commands');
 });
 
-bot.on("contact", (message) => {
-    console.log(message)
+bot.on("contact", (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, 'Your number has been received');
 })
+
+bot.on("location", (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, "Wow, you are from : " + msg.location.latitude)
+})
+
+bot.on('inline_query', (query) => {
+    
+    googleIt({'query': query.query}).then(results => {
+        if(Array.isArray(results)) {
+            const inlineResponse = results.map(result => {
+                let message = "Your search result:\n\n\n"
+                message += result.title + "\n"
+                message += result.link + "\n"
+                message += result.snippet + "\n"
+                message += "\n\n"
+                return {
+                    id: results.indexOf(result),
+                    type: 'article',
+                    title: result.title,
+                    description: result.snippet,
+                    message_text: message,
+                    url : result.link,
+                }
+            })
+            return bot.answerInlineQuery(query.id, inlineResponse);
+        }
+      }).catch(e => {
+        console.log(e)
+      })
+});
 
 bot.on("polling_error", (err) => {
     console.log(err)
-    //bot.sendMessage(chatId, "Something went wrong")
 })
 
 console.log("Robot online")
