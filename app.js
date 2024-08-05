@@ -45,8 +45,6 @@ e.g : google Gideon from flash
   );
 });
 
-// Listen for any kind of message. There are different kinds of
-// messages.
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
   if(msg.text === "/start" || msg.text === "/google" || msg.contact || msg.location)
@@ -82,12 +80,9 @@ Here is a list of all commands
     return
   }
   else if(msg.text === "😊 Random") {
-    console.log()
     return bot.sendMessage(chatId, "Here is a random word : " + generate())
   }
   
-
-  // send a message to the chat acknowledging receipt of their message
   else if(!msg.text.startsWith("Your search result:"))
    return bot.sendMessage(chatId, 'Received your message. /help for all bot commands');
 });
@@ -103,7 +98,6 @@ bot.on("location", (msg) => {
 })
 
 bot.on('inline_query', (query) => {
-    
     googleIt({'query': query.query}).then(results => {
         if(Array.isArray(results)) {
             const inlineResponse = results.map(result => {
