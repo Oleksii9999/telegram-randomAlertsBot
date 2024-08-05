@@ -1,6 +1,7 @@
 import { configDotenv } from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
 import googleIt from "google-it"
+import { generate } from "random-words";
 
 configDotenv()
 
@@ -14,7 +15,7 @@ bot.onText(/\/start/, (msg, match) => {
   const options = {
     reply_markup: {
       keyboard: [
-        [{ text: '😊 Random', callback_data: 'button1' }],
+        [{ text: '😊 Random', callback_data: 'random' }],
         [{ text: '😎 share contact with robot', request_contact: true }],
         [{ text: '🙌 share location with robot', request_location: true }]
       ]
@@ -48,13 +49,21 @@ e.g : google Gideon from flash
 // messages.
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
+  console.log(msg)
   if(msg.text === "/start" || msg.text === "/google")
     return
   else if(msg.text.toLowerCase() === "/help") {
-    return bot.sendMessage(chatId, )
+    return bot.sendMessage(chatId, 
+`
+Here is a list of all commands
+/start - Start / View robots options
+/google - Search google with the bot
+/help - view all bot's commands
+`
+    )
   }
 
-  if(msg.text.toLowerCase().startsWith("google")) {
+ else if(msg.text.toLowerCase().startsWith("google")) {
     const search = msg.text.substring(6).trim()
     googleIt({'query': search}).then(results => {
         if(Array.isArray(results)) {
@@ -73,14 +82,23 @@ bot.on('message', (msg) => {
       })
     return
   }
+  else if(msg.text === "😊 Random") {
+    console.log()
+    return bot.sendMessage(chatId, "Here is a random word : " + generate())
+  }
   
 
   // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your message');
+  bot.sendMessage(chatId, 'Received your message. /help for all bot commands');
 });
 
-bot.on("callback_query", (query) => {
-    console.log(query.message.chat)
-    chatId = query.message.chat.id;
-
+bot.on("contact", (message) => {
+    console.log(message)
 })
+
+bot.on("polling_error", (err) => {
+    console.log(err)
+    //bot.sendMessage(chatId, "Something went wrong")
+})
+
+console.log("Robot online")
