@@ -88,7 +88,8 @@ Here is a list of all commands
   
 
   // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your message. /help for all bot commands');
+  else if(!msg.text.startsWith("Your search result:"))
+   return bot.sendMessage(chatId, 'Received your message. /help for all bot commands');
 });
 
 bot.on("contact", (msg) => {
