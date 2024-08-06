@@ -125,9 +125,10 @@ Here is a list of all commands
           })
     });
   
-    bot.setWebHook('https://gideon-tg-bot.onrender.com', {
+    /*bot.setWebHook('https://gideon-tg-bot.onrender.com', {
       certificate: process.cwd() + 'crt.pem',
     });
+    */
     
     bot.on("polling_error", (err) => {
         console.error(err)
