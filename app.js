@@ -2,6 +2,7 @@ import { configDotenv } from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
 import googleIt from "google-it"
 import { generate } from "random-words";
+import http from "http"
 
 configDotenv()
 
@@ -128,15 +129,16 @@ Here is a list of all commands
   });
   
   bot.on("polling_error", (err) => {
-      console.log(err)
+      console.error(err)
   })
   
-  console.log("Robot online")
   
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'Telegram update processed' })
-  };
+  
+  return http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write('Hello World!');
+    res.end();
+  }).listen(4000, () => console.log(console.info("Robot online")))
 })();
 
 export default handler
