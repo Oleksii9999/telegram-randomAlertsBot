@@ -131,3 +131,5 @@ bot.on('inline_query', (query) => {
 bot.on("polling_error", (err) => {
     console.error(err)
 })
+
+console.info("Robot online")
