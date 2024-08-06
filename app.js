@@ -138,3 +138,5 @@ Here is a list of all commands
     body: JSON.stringify({ message: 'Telegram update processed' })
   };
 })();
+
+export default handler
