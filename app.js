@@ -9,7 +9,7 @@ configDotenv()
 const token = process.env.KEY;
 
 export const handler = (() => {
-  return http.createServer((req, res) => {
+  http.createServer((req, res) => {
     const bot = new TelegramBot(token, {polling: true});
     
     bot.onText(/\/start/, (msg, match) => {
@@ -125,7 +125,7 @@ Here is a list of all commands
           })
     });
   
-    bot.setWebHook('https://gideon-tg-bot.vercel.app/', {
+    bot.setWebHook('https://gideon-tg-bot.onrender.com', {
       certificate: process.cwd() + 'crt.pem',
     });
     
@@ -137,7 +137,7 @@ Here is a list of all commands
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.write('Hello World!');
     res.end();
-  }).listen(4000, () => console.log(console.info("Robot online")))
+  }).listen(4000, () => console.info("Robot online"))
 })();
 
 export default handler
