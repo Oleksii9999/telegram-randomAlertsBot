@@ -122,6 +122,10 @@ Here is a list of all commands
           console.log(e)
         })
   });
+
+  bot.setWebHook('https://gideon-tg-bot.vercel.app/', {
+    certificate: process.cwd() + 'crt.pem',
+  });
   
   bot.on("polling_error", (err) => {
       console.log(err)
