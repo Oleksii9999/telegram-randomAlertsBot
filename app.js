@@ -2,7 +2,8 @@ import { configDotenv } from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
 import googleIt from "google-it"
 import { generate } from "random-words";
-import http from "http"
+import { encrypt, decrypt } from "./encryption.js";
+import isUrl from "is-url";
 
 configDotenv()
 
@@ -46,6 +47,25 @@ e.g : google Gideon from flash
   );
 });
 
+
+bot.onText(/hash-to-url:(.+)/, (msg, match) => {
+  const chatId = msg.chat.id;
+
+  const link = decrypt(match[1])
+  if(link && isUrl(link)) {
+    return bot.sendMessage(chatId,
+`
+Here is the hashed link from ${msg.from.first_name} - ${msg.from.id}
+` , {
+  reply_markup: {
+    inline_keyboard: [
+      [{ text: 'link', callback_data: 'link', url : link }],
+    ]
+  }
+})
+  }
+});
+
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
   if(msg.text === "/start" || msg.text === "/google" || msg.contact || msg.location)
@@ -83,9 +103,6 @@ Here is a list of all commands
   else if(msg.text === "😊 Random") {
     return bot.sendMessage(chatId, "Here is a random word : " + generate())
   }
-  
-  else if(!msg.text.startsWith("Your search result:"))
-    return bot.sendMessage(chatId, 'Received your message. /help for all bot commands');
 });
 
 bot.on("contact", (msg) => {
@@ -99,28 +116,23 @@ bot.on("location", (msg) => {
 })
 
 bot.on('inline_query', (query) => {
-    googleIt({'query': query.query}).then(results => {
-        if(Array.isArray(results)) {
-            const inlineResponse = results.map(result => {
-                let message = "Your search result:\n\n\n"
-                message += result.title + "\n"
-                message += result.link + "\n"
-                message += result.snippet + "\n"
-                message += "\n\n"
-                return {
-                    id: results.indexOf(result),
-                    type: 'article',
-                    title: result.title,
-                    description: result.snippet,
-                    message_text: message,
-                    url : result.link,
-                }
-            })
-            return bot.answerInlineQuery(query.id, inlineResponse);
-        }
-      }).catch(e => {
-        console.log(e)
-      })
+  if(isUrl(query.query))
+    return bot.answerInlineQuery(query.id, [{
+      id: 0,
+      type : "article",
+      title: "e.g https://url.com",
+      description: "When you choose this option, you would be able to send a hashed link to anygroup this bot is a member of. First paste the link you want to send here.",
+      message_text: "hash-to-url:" + encrypt(query.query),
+      url : query.query,
+  }]);
+  return bot.answerInlineQuery(query.id, [{
+    id: 0,
+    type : "article",
+    title: "e.g https://url.com",
+    description: "When you choose this option, you would be able to send a hashed link to anygroup this bot is a member of. First paste the link you want to send here.",
+    message_text: "invalid link",
+    url : "https://example.com",
+}]);
 });
 
 /*bot.setWebHook('https://gideon-tg-bot.onrender.com', {
