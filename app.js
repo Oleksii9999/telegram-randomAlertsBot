@@ -18,8 +18,8 @@ bot.onText(/\/start/, (msg, match) => {
     reply_markup: {
       keyboard: [
         [{ text: '😊 Random', callback_data: 'random' }],
-        [{ text: '😎 share contact with robot', request_contact: true }],
-        [{ text: '🙌 share location with robot', request_location: true }]
+        //[{ text: '😎 share contact with robot', request_contact: true }],
+        //[{ text: '🙌 share location with robot', request_location: true }]
       ]
     }
   };
@@ -36,15 +36,25 @@ send /help for list of commands
   , options);
 });
 
-bot.onText(/\/google/, (msg, match) => {
+bot.onText(/\/google (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
 
-  bot.sendMessage(chatId, 
-`
-To search on google send *google what you want to search*
-e.g : google Gideon from flash
-`
-  );
+  const search = msg.text.substring(7).trim()
+  googleIt({'query': search}).then(results => {
+    if(Array.isArray(results)) {
+        let message = "Your search results:\n\n\n"
+        results.forEach(element => {
+            message += element.title + "\n"
+            message += element.link + "\n"
+            message += element.snippet + "\n"
+            message += "\n\n"
+        });
+        return bot.sendMessage(chatId, message)
+    }
+  }).catch(e => {
+    console.log(e)
+    bot.sendMessage(chatId, "Something went wrong")
+  })
 });
 
 
@@ -79,26 +89,6 @@ Here is a list of all commands
 /help - view all bot's commands
 `
     )
-  }
-
-  else if(msg.text.toLowerCase().startsWith("google")) {
-    const search = msg.text.substring(6).trim()
-    googleIt({'query': search}).then(results => {
-        if(Array.isArray(results)) {
-            let message = "Your search results:\n\n\n"
-            results.forEach(element => {
-                message += element.title + "\n"
-                message += element.link + "\n"
-                message += element.snippet + "\n"
-                message += "\n\n"
-            });
-            return bot.sendMessage(chatId, message)
-        }
-      }).catch(e => {
-        console.log(e)
-        bot.sendMessage(chatId, "Something went wrong")
-      })
-    return
   }
   else if(msg.text === "😊 Random") {
     return bot.sendMessage(chatId, "Here is a random word : " + generate())
