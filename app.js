@@ -93,7 +93,7 @@ ${response}
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const ignoringCommands = ["hash-to-url:","/prompt","/google"]
-  if(msg.text === "/start" || msg.text === "/google" || ignoringCommands.some( c => msg.text.startsWith(c)) || msg.contact || msg.location)
+  if(msg.text === undefined || msg.text === "/start" || msg.text === "/google" || ignoringCommands.some( c => msg.text.startsWith(c)) || msg.contact || msg.location)
     return
   else if(msg.text.toLowerCase() === "/help") {
     return bot.sendMessage(chatId, 
