@@ -4,6 +4,7 @@ import googleIt from "google-it"
 import { generate } from "random-words";
 import { encrypt, decrypt } from "./encryption.js";
 import isUrl from "is-url";
+import chat from "./genai.js";
 
 configDotenv()
 
@@ -17,7 +18,7 @@ bot.onText(/\/start/, (msg, match) => {
   const options = {
     reply_markup: {
       keyboard: [
-        [{ text: '😊 Random', callback_data: 'random' }],
+        [{ text: '🎲 Random', callback_data: 'random' }],
         //[{ text: '😎 share contact with robot', request_contact: true }],
         //[{ text: '🙌 share location with robot', request_location: true }]
       ]
@@ -42,14 +43,14 @@ bot.onText(/\/google (.+)/, (msg, match) => {
   const search = msg.text.substring(7).trim()
   googleIt({'query': search}).then(results => {
     if(Array.isArray(results)) {
-        let message = "Your search results:\n\n\n"
+        let message = `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a> ~  here are your search results:\n\n\n`
         results.forEach(element => {
-            message += element.title + "\n"
+            message += "\n" + element.title + "\n"
             message += element.link + "\n"
             message += element.snippet + "\n"
             message += "\n\n"
         });
-        return bot.sendMessage(chatId, message)
+        return bot.sendMessage(chatId, message, {parse_mode : "HTML"})
     }
   }).catch(e => {
     console.log(e)
@@ -65,20 +66,31 @@ bot.onText(/hash-to-url:(.+)/, (msg, match) => {
   if(link && isUrl(link)) {
     return bot.sendMessage(chatId,
 `
-Here is the hashed link from ${msg.from.first_name} - ${msg.from.id}
+Decrypted link from [${msg.from.first_name}](tg://user?id=${msg.from.id})
 ` , {
   reply_markup: {
     inline_keyboard: [
-      [{ text: 'link', callback_data: 'link', url : link }],
+      [{ text: 'visit link', callback_data: 'link', url : link }],
     ]
-  }
+  }, parse_mode : "MarkdownV2", reply_to_message_id: msg.message_id
 })
   }
 });
 
-bot.on('message', (msg) => {
+
+bot.onText(/prompt (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
-  if(msg.text === "/start" || msg.text === "/google" || msg.contact || msg.location)
+
+  const prompt = match[1].trim()
+  const response = await chat(prompt)
+  return bot.sendMessage(chatId, response, {reply_to_message_id: msg.message_id, parse_mode : "Markdown"
+  })
+});
+
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+  const ignoringCommands = ["hash-to-url:","/prompt","/google"]
+  if(msg.text === "/start" || msg.text === "/google" || ignoringCommands.some( c => msg.text.startsWith(c)) || msg.contact || msg.location)
     return
   else if(msg.text.toLowerCase() === "/help") {
     return bot.sendMessage(chatId, 
@@ -87,11 +99,17 @@ Here is a list of all commands
 /start - Start / View robots options
 /google - Search google with the bot
 /help - view all bot's commands
+/prompt - Use generative AI
 `
     )
   }
-  else if(msg.text === "😊 Random") {
-    return bot.sendMessage(chatId, "Here is a random word : " + generate())
+  else if(msg.text === "🎲 Random") {
+    return bot.sendMessage(chatId, generate())
+  }
+  else {
+    const response = await chat(msg.text)
+    return bot.sendMessage(chatId, response , {reply_to_message_id: msg.message_id, parse_mode : "Markdown"
+    })
   }
 });
 
@@ -124,11 +142,6 @@ bot.on('inline_query', (query) => {
     url : "https://example.com",
 }]);
 });
-
-/*bot.setWebHook('https://gideon-tg-bot.onrender.com', {
-  certificate: process.cwd() + 'crt.pem',
-});
-*/
 
 bot.on("polling_error", (err) => {
     console.error(err)
