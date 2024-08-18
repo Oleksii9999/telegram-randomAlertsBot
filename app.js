@@ -83,8 +83,11 @@ bot.onText(/prompt (.+)/, async (msg, match) => {
 
   const prompt = match[1].trim()
   const response = await chat(prompt)
-  return bot.sendMessage(chatId, response, {reply_to_message_id: msg.message_id, parse_mode : "Markdown"
-  })
+  return bot.sendMessage(chatId, 
+`[${msg.from.first_name}](tg://user?id=${msg.from.id})
+
+${response}
+`, {parse_mode : "Markdown"})
 });
 
 bot.on('message', async (msg) => {
