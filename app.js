@@ -1,7 +1,6 @@
 import { configDotenv } from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
 import googleIt from "google-it"
-import { generate } from "random-words";
 import { encrypt, decrypt } from "./encryption.js";
 import isUrl from "is-url";
 import chat from "./genai.js";
@@ -106,9 +105,6 @@ Here is a list of all commands
 /prompt - Use generative AI
 `
     )
-  }
-  else if(msg.text === "🎲 Random") {
-    return bot.sendMessage(chatId, generate())
   }
   else
     return
