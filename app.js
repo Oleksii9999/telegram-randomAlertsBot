@@ -59,7 +59,7 @@ bot.onText(/\/google (.+)/, (msg, match) => {
 });
 
 
-bot.onText(/\/hash-to-url(.+)/, (msg, match) => {
+bot.onText(/\/hash-to-url (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
 
   const link = decrypt(match[1])
@@ -127,7 +127,7 @@ bot.on('inline_query', (query) => {
       type : "article",
       title: "e.g https://url.com",
       description: "When you choose this option, you would be able to send a hashed link to anygroup this bot is a member of. First paste the link you want to send here.",
-      message_text: "/hash-to-url" + encrypt(query.query),
+      message_text: "/hash-to-url " + encrypt(query.query),
       url : query.query,
   }]);
   return bot.answerInlineQuery(query.id, [{
