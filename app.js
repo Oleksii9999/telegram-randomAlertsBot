@@ -33,8 +33,9 @@ Opps! 😎😎
 
 You can choose any of these options
 send /help for list of commands
+use /prompt to chat with the AI
 `
-  , options);
+);
 });
 
 bot.onText(/\/google (.+)/, (msg, match) => {
@@ -84,10 +85,10 @@ bot.onText(/prompt (.+)/, async (msg, match) => {
   const prompt = match[1].trim()
   const response = await chat(prompt)
   return bot.sendMessage(chatId, 
-`[${msg.from.first_name}](tg://user?id=${msg.from.id})
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
 
 ${response}
-`, {parse_mode : "Markdown"})
+`, {parse_mode : "HTML"})
 });
 
 bot.on('message', async (msg) => {
@@ -109,11 +110,8 @@ Here is a list of all commands
   else if(msg.text === "🎲 Random") {
     return bot.sendMessage(chatId, generate())
   }
-  else {
-    const response = await chat(msg.text)
-    return bot.sendMessage(chatId, response , {reply_to_message_id: msg.message_id, parse_mode : "Markdown"
-    })
-  }
+  else
+    return
 });
 
 bot.on("contact", (msg) => {
