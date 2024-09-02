@@ -81,13 +81,19 @@ Link from [${msg.from.first_name}](tg://user?id=${msg.from.id})
 bot.onText(/prompt (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
 
-  const prompt = match[1].trim()
-  const response = await chat(prompt)
-  return bot.sendMessage(chatId, 
-`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
-
+  try {
+    return bot.sendMessage(chatId, 
+`
+${response}
+`, {parse_mode : "HTML", reply_to_message_id : msg.message_id})
+  
+  }
+  catch(err) {
+    return bot.sendMessage(chatId, 
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a> 👀
 ${response}
 `, {parse_mode : "HTML"})
+  }
 });
 
 bot.on('message', async (msg) => {
@@ -106,8 +112,25 @@ Here is a list of all commands
 `
     )
   }
-  else
-    return
+  else {
+    const response = await chat(msg)
+    try {
+      return bot.sendMessage(chatId, 
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
+
+${response}
+`, {parse_mode : "HTML", reply_to_message_id : msg.message_id})
+    
+    }
+    catch(err) {
+      return bot.sendMessage(chatId, 
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a> 👀
+
+${response}
+`, {parse_mode : "HTML"})
+    }
+  }
+  return
 });
 
 bot.on("contact", (msg) => {
