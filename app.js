@@ -85,7 +85,6 @@ bot.onText(/prompt (.+)/, async (msg, match) => {
   const response = await chat(prompt)
   return bot.sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
-
 ${response}
 `, {parse_mode : "HTML"})
 });
@@ -106,8 +105,19 @@ Here is a list of all commands
 `
     )
   }
-  else
-    return
+  else {
+    try {
+      const response = await chat(msg.text)
+      return bot.sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
+    }
+    catch(err) {
+      const response = await chat(msg.text)
+      return bot.sendMessage(chatId, 
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
+${response}
+`, {parse_mode : "HTML"})
+    }
+  }
 });
 
 bot.on("contact", (msg) => {
