@@ -99,7 +99,7 @@ Whenever you're ready to proceed, respond with: "Okay, I’m all set to be your 
               {
                 role: "model",
                 parts: [
-                  {text: "Okay, I can do that.\n"},
+                  {text: "Okay, I’m all set to be your friendly companion.\n"},
                 ],
               },
             ],
