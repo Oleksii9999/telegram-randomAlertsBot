@@ -92,6 +92,57 @@ ${response}
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const ignoringCommands = ["/url","/prompt","/google"]
+  const triggerWords = [
+    "gideon",
+    // Greetings
+    "hi", 
+    "hello", 
+    "hey", 
+    "good morning", 
+    "good afternoon", 
+    "good evening", 
+    "what's up", 
+    "howdy", 
+    "greetings", 
+    "sup",
+    
+    // Cry for Help
+    "help", 
+    "please help", 
+    "i need help", 
+    "can someone help", 
+    "emergency", 
+    "i'm in trouble", 
+    "i need assistance", 
+    "help me", 
+    "sos", 
+    "save me", 
+  
+    // Common Questions/Statements
+    "anyone here?", 
+    "is anyone there?", 
+    "i'm new here", 
+    "how are you?", 
+    "hru", 
+    "what's going on?", 
+    "what's happening?", 
+    "where is everyone?", 
+    "can you help me?", 
+    "i need advice",
+    
+    // Expressions of Emotion
+    "i'm sad", 
+    "i'm happy", 
+    "i feel lonely", 
+    "i'm angry", 
+    "i'm scared", 
+    "i'm excited", 
+    "i'm confused", 
+    "i'm lost", 
+    "i'm frustrated", 
+    "i need a friend"
+  ];
+  
   if(msg.text === undefined || msg.text === "/start" || msg.text === "/google" || ignoringCommands.some( c => msg.text.startsWith(c)) || msg.contact || msg.location)
     return
   else if(msg.text.toLowerCase() === "/help") {
@@ -105,18 +156,22 @@ Here is a list of all commands
 `
     )
   }
-  else {
+  else if(triggerWords.some( word => msg.text.toLowerCase().includes(word)) || (msg.reply_to_message && msg.reply_to_message.from.id === 7123617877)) {
+    let input = msg.text
     try {
-      const response = await chat(msg.text)
+      const response = await chat(input)
       return bot.sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
     }
     catch(err) {
-      const response = await chat(msg.text)
+      const response = await chat(input)
       return bot.sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
 ${response}
 `, {parse_mode : "HTML"})
     }
+  }
+  else {
+    /**/return
   }
 });
 
