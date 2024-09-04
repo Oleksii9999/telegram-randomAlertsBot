@@ -164,7 +164,6 @@ Here is a list of all commands
     let input = msg.text
     const userID = msg.from.id
     const history = await getConversationHistory(userID)
-    console.log(history)
     const response = await chat(input, history)
 
     try {
@@ -184,7 +183,6 @@ ${response}
     }
   }
   else {
-    console.log(9181818)
     /**/return
   }
 });
