@@ -4,8 +4,11 @@ import googleIt from "google-it"
 import { encrypt, decrypt } from "./encryption.js";
 import isUrl from "is-url";
 import chat from "./genai.js";
+import { connectToDatabase } from "./config.js";
+import Chat from "./model/usermessages.js";
 
 configDotenv()
+connectToDatabase()
 
 const token = process.env.KEY;
 
@@ -32,7 +35,7 @@ Opps! 😎😎
 
 You can choose any of these options
 send /help for list of commands
-use /prompt to chat with the AI
+use /ask to chat with the AI
 `
 );
 });
@@ -78,7 +81,7 @@ Link from [${msg.from.first_name}](tg://user?id=${msg.from.id})
 });
 
 
-bot.onText(/prompt (.+)/, async (msg, match) => {
+bot.onText(/ask (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
 
   const prompt = match[1].trim()
@@ -91,7 +94,7 @@ ${response}
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
-  const ignoringCommands = ["/url","/prompt","/google"]
+  const ignoringCommands = ["/url","/ask","/google"]
   const triggerWords = [
     "gideon",
     // Greetings
@@ -152,7 +155,7 @@ Here is a list of all commands
 /start - Start / View robots options
 /google - Search google with the bot
 /help - view all bot's commands
-/prompt - Use generative AI
+/ask - Use generative AI
 `
     )
   }

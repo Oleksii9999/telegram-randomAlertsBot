@@ -4,7 +4,8 @@
     "dotenv": "^16.4.5",
     "google-it": "^1.6.4",
     "is-url": "^1.2.4",
-    "node-telegram-bot-api": "^0.66.0",
+    "mongoose": "^8.6.1",
+    "node-telegram-bot-api": "^0.63.0",
     "nodemon": "^3.1.4",
     "random-words": "^2.0.1"
   },
