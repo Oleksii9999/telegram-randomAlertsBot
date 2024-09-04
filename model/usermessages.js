@@ -1,14 +1,11 @@
-import { model, Schema, SchemaType } from "mongoose";
+import { model, Schema, } from "mongoose";
 
 const MessageSchema = Schema({
-    id : {
-        type : Schema.Types.ObjectId
-    },
     telegramUserMessageId : {
         required : true,
         type : Number
     },
-    message : {
+    text : {
         type : String,
         required : true
     },

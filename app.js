@@ -5,12 +5,13 @@ import { encrypt, decrypt } from "./encryption.js";
 import isUrl from "is-url";
 import chat from "./genai.js";
 import { connectToDatabase } from "./config.js";
-import Chat from "./model/usermessages.js";
+import { addToConversationHistory, getConversationHistory } from "./userHistory.js";
 
 configDotenv()
 connectToDatabase()
 
 const token = process.env.KEY;
+const botID = 7123617877
 
 const bot = new TelegramBot(token, {polling: true});
 
@@ -159,21 +160,31 @@ Here is a list of all commands
 `
     )
   }
-  else if(triggerWords.some( word => msg.text.toLowerCase().includes(word)) || (msg.reply_to_message && msg.reply_to_message.from.id === 7123617877)) {
+  else if(triggerWords.some( word => msg.text.toLowerCase().includes(word)) || (msg.reply_to_message && msg.reply_to_message.from.id === botID)) {
     let input = msg.text
+    const userID = msg.from.id
+    const history = await getConversationHistory(userID)
+    console.log(history)
+    const response = await chat(input, history)
+
     try {
-      const response = await chat(input)
-      return bot.sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
+      bot.sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
+      await addToConversationHistory(userID, input, "user")
+      await addToConversationHistory(userID, response, "model")
+      return
     }
     catch(err) {
-      const response = await chat(input)
-      return bot.sendMessage(chatId, 
+      bot.sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
 ${response}
 `, {parse_mode : "HTML"})
+      await addToConversationHistory(userID, input, "user")
+      await addToConversationHistory(userID, response, "model")
+      return
     }
   }
   else {
+    console.log(9181818)
     /**/return
   }
 });
