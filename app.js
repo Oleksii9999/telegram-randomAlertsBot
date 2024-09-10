@@ -15,6 +15,14 @@ const botID = 7123617877
 
 const bot = new TelegramBot(token, {polling: true});
 
+const sendMessage = (chatId, text, options = {}) => {
+  bot.sendMessage(chatId, text, options)
+    .then()
+    .catch((error) => {
+      console.error('Failed to send message:', error);
+    });
+};
+
 bot.onText(/\/start/, (msg, match) => {
   const chatId = msg.chat.id;
 
@@ -28,7 +36,7 @@ bot.onText(/\/start/, (msg, match) => {
     }
   };
 
-  bot.sendMessage(chatId, 
+  sendMessage(chatId, 
 `
 Welcome to @gideon_from_2024_bot Bot.
 This is just a random bot.
@@ -54,11 +62,11 @@ bot.onText(/\/google (.+)/, (msg, match) => {
             message += element.snippet + "\n"
             message += "\n\n"
         });
-        return bot.sendMessage(chatId, message, {parse_mode : "HTML"})
+        return sendMessage(chatId, message, {parse_mode : "HTML"})
     }
   }).catch(e => {
     console.log(e)
-    bot.sendMessage(chatId, "Something went wrong")
+    sendMessage(chatId, "Something went wrong")
   })
 });
 
@@ -68,7 +76,7 @@ bot.onText(/\/url (.+)/, (msg, match) => {
 
   const link = decrypt(match[1])
   if(link && isUrl(link)) {
-    return bot.sendMessage(chatId,
+    return sendMessage(chatId,
 `
 Link from [${msg.from.first_name}](tg://user?id=${msg.from.id})
 ` , {
@@ -87,7 +95,7 @@ bot.onText(/ask (.+)/, async (msg, match) => {
 
   const prompt = match[1].trim()
   const response = await chat(prompt)
-  return bot.sendMessage(chatId, 
+  return sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
 ${response}
 `, {parse_mode : "HTML"})
@@ -99,6 +107,7 @@ bot.on('message', async (msg) => {
   const triggerWords = [
     "gideon",
     // Greetings
+    /*
     "hi", 
     "hello", 
     "hey", 
@@ -145,12 +154,13 @@ bot.on('message', async (msg) => {
     "i'm lost", 
     "i'm frustrated", 
     "i need a friend"
+    */
   ];
-  
+
   if(msg.text === undefined || msg.text === "/start" || msg.text === "/google" || ignoringCommands.some( c => msg.text.startsWith(c)) || msg.contact || msg.location)
     return
   else if(msg.text.toLowerCase() === "/help") {
-    return bot.sendMessage(chatId, 
+    return sendMessage(chatId, 
 `
 Here is a list of all commands
 /start - Start / View robots options
@@ -160,6 +170,29 @@ Here is a list of all commands
 `
     )
   }
+  
+  else if(msg.chat.type === "private") {
+    let input = msg.text
+    const userID = msg.from.id
+    const history = await getConversationHistory(userID)
+    const response = await chat(input, history)
+
+    try {
+      sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
+      await addToConversationHistory(userID, input, "user")
+      await addToConversationHistory(userID, response, "model")
+      return
+    }
+    catch(err) {
+      sendMessage(chatId, 
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
+${response}
+`, {parse_mode : "HTML"})
+      await addToConversationHistory(userID, input, "user")
+      await addToConversationHistory(userID, response, "model")
+      return
+    }
+  }
   else if(triggerWords.some( word => msg.text.toLowerCase().includes(word)) || (msg.reply_to_message && msg.reply_to_message.from.id === botID)) {
     let input = msg.text
     const userID = msg.from.id
@@ -167,13 +200,13 @@ Here is a list of all commands
     const response = await chat(input, history)
 
     try {
-      bot.sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
+      sendMessage(chatId, `${response}`, {reply_to_message_id : msg.message_id})
       await addToConversationHistory(userID, input, "user")
       await addToConversationHistory(userID, response, "model")
       return
     }
     catch(err) {
-      bot.sendMessage(chatId, 
+      sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
 ${response}
 `, {parse_mode : "HTML"})
@@ -189,12 +222,12 @@ ${response}
 
 bot.on("contact", (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Your number has been received');
+  sendMessage(chatId, 'Your number has been received');
 })
 
 bot.on("location", (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "Wow, you are from : " + msg.location.latitude)
+  sendMessage(chatId, "Wow, you are from : " + msg.location.latitude)
 })
 
 bot.on('inline_query', (query) => {
