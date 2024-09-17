@@ -1,14 +1,23 @@
 import { configDotenv } from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
-import googleIt from "google-it"
 import { encrypt, decrypt } from "./encryption.js";
 import isUrl from "is-url";
 import chat from "./genai.js";
 import { connectToDatabase } from "./config.js";
 import { addToConversationHistory, getConversationHistory } from "./userHistory.js";
+import { 
+  search, 
+  // import the result types you want
+  OrganicResult, 
+  DictionaryResult,
+  // helpful to import ResultTypes to filter results
+  ResultTypes 
+} from 'google-sr';
+
 
 configDotenv()
 connectToDatabase()
+
 
 const token = process.env.KEY;
 const botID = 7123617877
@@ -49,25 +58,31 @@ use /ask to chat with the AI
 );
 });
 
-bot.onText(/\/google (.+)/, (msg, match) => {
+bot.onText(/\/google (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
-
-  const search = msg.text.substring(7).trim()
-  googleIt({'query': search}).then(results => {
-    if(Array.isArray(results)) {
-        let message = `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a> ~  here are your search results:\n\n\n`
-        results.forEach(element => {
-            message += "\n" + element.title + "\n"
-            message += element.link + "\n"
-            message += element.snippet + "\n"
-            message += "\n\n"
-        });
-        return sendMessage(chatId, message, {parse_mode : "HTML"})
-    }
-  }).catch(e => {
-    console.log(e)
-    sendMessage(chatId, "Something went wrong")
+  const input = msg.text.substring(7).trim()
+  const results = await search({
+      query: input,
+      // OrganicResult is the default, however it is recommended to ALWAYS specify the result type
+      resultTypes: [OrganicResult],
+      // to add additional configuration to the request, use the requestConfig option
+      // which accepts a AxiosRequestConfig object
+      // OPTIONAL
+      requestConfig: {
+      params: {
+              // enable "safe mode"
+        safe: 'active'
+      },
+    },
   })
+  let message = `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a> ~  here are your search results:\n\n\n`
+  results.forEach(element => {
+      message += "\n" + element.title ?? "" + "\n"
+      message += element.link ?? "" + "\n"
+      message += element.description ?? "" + "\n"
+      message += "\n\n"
+  });
+  return sendMessage(chatId, message, {parse_mode : "HTML"})
 });
 
 
