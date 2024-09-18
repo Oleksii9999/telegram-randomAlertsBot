@@ -13,6 +13,8 @@ import {
   // helpful to import ResultTypes to filter results
   ResultTypes 
 } from 'google-sr';
+import gTTS from "gtts"
+import { changeAudioSpeed } from "./audo-editor.js";
 
 
 configDotenv()
@@ -53,9 +55,47 @@ Opps! 😎😎
 
 You can choose any of these options
 send /help for list of commands
-use /ask to chat with the AI
+use /ask or send a message containing "gideon" to chat with the AI
 `
 );
+});
+
+
+bot.onText(/\/voice/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  
+  let input = msg.text
+  const userID = msg.from.id
+  
+  const history = await getConversationHistory(userID)
+
+  const response = await chat(input, history)
+
+  const speech = new gTTS(response, "en-uk", false)
+
+  speech.save("./voice.mp3", async (err, result) => {
+
+    changeAudioSpeed("./voice.mp3", "./spedup.mp3", 1.1, async () => {
+      try {
+        bot.sendVoice(chatId, "./spedup.mp3", {reply_to_message_id : msg.message_id})
+        await addToConversationHistory(userID, input, "user")
+        await addToConversationHistory(userID, response, "model")
+        return
+      }
+      catch(err) {
+        sendMessage(chatId, 
+`<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
+${response}
+
+
+Could not send as a voice message
+`, {parse_mode : "HTML"})
+        await addToConversationHistory(userID, input, "user")
+        await addToConversationHistory(userID, response, "model")
+        return
+      }
+    })
+  })
 });
 
 bot.onText(/\/google (.+)/, async (msg, match) => {
@@ -118,7 +158,7 @@ ${response}
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
-  const ignoringCommands = ["/url","/ask","/google"]
+  const ignoringCommands = ["/url","/ask","/google", "/voice"]
   const triggerWords = [
     "gideon",
     // Greetings
@@ -182,6 +222,7 @@ Here is a list of all commands
 /google - Search google with the bot
 /help - view all bot's commands
 /ask - Use generative AI
+/voice - for the ai to use voice messages
 `
     )
   }
