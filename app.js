@@ -15,6 +15,8 @@ import {
 } from 'google-sr';
 import gTTS from "gtts"
 import { changeAudioSpeed } from "./audo-editor.js";
+import { generate } from "randomstring";
+import fs from "fs"
 
 
 configDotenv()
@@ -61,7 +63,7 @@ use /ask or send a message containing "gideon" to chat with the AI
 });
 
 
-bot.onText(/\/voice/, async (msg, match) => {
+bot.onText(/@voice/, async (msg, match) => {
   const chatId = msg.chat.id;
   
   let input = msg.text
@@ -72,15 +74,16 @@ bot.onText(/\/voice/, async (msg, match) => {
   const response = await chat(input, history)
 
   const speech = new gTTS(response, "en-uk", false)
+  const inVoice = generate(9)
+  const outVoice = generate(9)
 
-  speech.save("./voice.mp3", async (err, result) => {
+  speech.save(`./${inVoice}.mp3`, async (err, result) => {
 
-    changeAudioSpeed("./voice.mp3", "./spedup.mp3", 1.1, async () => {
+    changeAudioSpeed(`./${inVoice}.mp3`, `./${outVoice}.mp3`, async () => {
       try {
-        bot.sendVoice(chatId, "./spedup.mp3", {reply_to_message_id : msg.message_id})
+        bot.sendVoice(chatId, `./${outVoice}.mp3`, {reply_to_message_id : msg.message_id})
         await addToConversationHistory(userID, input, "user")
         await addToConversationHistory(userID, response, "model")
-        return
       }
       catch(err) {
         sendMessage(chatId, 
@@ -92,7 +95,18 @@ Could not send as a voice message
 `, {parse_mode : "HTML"})
         await addToConversationHistory(userID, input, "user")
         await addToConversationHistory(userID, response, "model")
-        return
+      }
+      finally {
+        fs.unlink(`./${inVoice}.mp3`, (err) => {
+          if (err) {
+            return;
+          }
+        });
+        fs.unlink(`./${outVoice}.mp3`, (err) => {
+          if (err) {
+            return;
+          }
+        });
       }
     })
   })
@@ -158,7 +172,7 @@ ${response}
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
-  const ignoringCommands = ["/url","/ask","/google", "/voice"]
+  const ignoringCommands = ["/url","/ask","/google", "@voice"]
   const triggerWords = [
     "gideon",
     // Greetings
@@ -222,7 +236,7 @@ Here is a list of all commands
 /google - Search google with the bot
 /help - view all bot's commands
 /ask - Use generative AI
-/voice - for the ai to use voice messages
+@voice - for the ai to use voice messages
 `
     )
   }
