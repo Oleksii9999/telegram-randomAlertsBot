@@ -308,8 +308,8 @@ bot.on('inline_query', (query) => {
     return bot.answerInlineQuery(query.id, [{
       id: 0,
       type : "article",
-      title:  query.query,
-      description: "You are sending an encrypted link : " +  query.query,
+      title:  "🔗🔏 URL",
+      description: "You are sending an encrypted link :",
       message_text: "/url " + encrypt(query.query),
       url : query.query,
   }]);
