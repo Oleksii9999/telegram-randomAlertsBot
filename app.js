@@ -147,13 +147,16 @@ bot.onText(/\/url (.+)/, (msg, match) => {
   if(link && isUrl(link)) {
     return sendMessage(chatId,
 `
-Link from [${msg.from.first_name}](tg://user?id=${msg.from.id})
+Link from <a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
+
+
+<a href="${link}" >Link</a>
 ` , {
   reply_markup: {
     inline_keyboard: [
       [{ text: 'visit link', callback_data: 'link', url : link }],
     ]
-  }, parse_mode : "MarkdownV2", reply_to_message_id: msg.message_id
+  }, parse_mode : "HTML", reply_to_message_id: msg.message_id
 })
   }
 });
@@ -305,19 +308,12 @@ bot.on('inline_query', (query) => {
     return bot.answerInlineQuery(query.id, [{
       id: 0,
       type : "article",
-      title: "e.g https://url.com",
-      description: "When you choose this option, you would be able to send a hashed link to anygroup this bot is a member of. First paste the link you want to send here.",
+      title:  query.query,
+      description: "You are sending an encrypted link : " +  query.query,
       message_text: "/url " + encrypt(query.query),
       url : query.query,
   }]);
-  return bot.answerInlineQuery(query.id, [{
-    id: 0,
-    type : "article",
-    title: "e.g https://url.com",
-    description: "When you choose this option, you would be able to send a hashed link to anygroup this bot is a member of. First paste the link you want to send here.",
-    message_text: "invalid link",
-    url : "https://example.com",
-}]);
+  return bot.answerInlineQuery(query.id, []);
 });
 
 bot.on("polling_error", (err) => {
