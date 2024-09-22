@@ -17,6 +17,7 @@ import gTTS from "gtts"
 import { changeAudioSpeed } from "./audo-editor.js";
 import { generate } from "randomstring";
 import fs from "fs"
+import { markdownToHtml } from 'marksmithjs';
 
 
 configDotenv()
@@ -88,7 +89,7 @@ bot.onText(/@voice/, async (msg, match) => {
       catch(err) {
         sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
-${response}
+${markdownToHtml(response)}
 
 
 Could not send as a voice message
@@ -136,7 +137,7 @@ bot.onText(/\/google (.+)/, async (msg, match) => {
       message += element.description ?? "" + "\n"
       message += "\n\n"
   });
-  return sendMessage(chatId, message, {parse_mode : "HTML"})
+  return sendMessage(chatId, markdownToHtml(message), {parse_mode : "HTML"})
 });
 
 
@@ -169,7 +170,7 @@ bot.onText(/ask (.+)/, async (msg, match) => {
   const response = await chat(prompt)
   return sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
-${response}
+${markdownToHtml(response)}
 `, {parse_mode : "HTML"})
 });
 
@@ -259,7 +260,7 @@ Here is a list of all commands
     catch(err) {
       sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
-${response}
+${markdownToHtml(response)}
 `, {parse_mode : "HTML"})
       await addToConversationHistory(userID, input, "user")
       await addToConversationHistory(userID, response, "model")
@@ -281,7 +282,7 @@ ${response}
     catch(err) {
       sendMessage(chatId, 
 `<a href="tg://user?id=${msg.from.id}">${msg.from.first_name}</a>
-${response}
+${markdownToHtml(response)}
 `, {parse_mode : "HTML"})
       await addToConversationHistory(userID, input, "user")
       await addToConversationHistory(userID, response, "model")
